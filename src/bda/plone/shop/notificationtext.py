@@ -1,6 +1,7 @@
 from .utils import get_shop_notification_settings
 from Acquisition import aq_parent
 from Products.CMFCore.interfaces import ISiteRoot
+from Products.CMFPlone.utils import safe_unicode
 from bda.plone.orders.interfaces import IGlobalNotificationText
 from bda.plone.orders.interfaces import IItemNotificationText
 from zope.component import adapter
@@ -21,14 +22,14 @@ class BubbleItemNotificationText(object):
         parent = queryAdapter(aq_parent(self.context), IItemNotificationText)
         if parent:
             return parent.order_text
-        return ''
+        return u''
 
     @property
     def overbook_text(self):
         parent = queryAdapter(aq_parent(self.context), IItemNotificationText)
         if parent:
             return parent.overbook_text
-        return ''
+        return u''
 
 
 @implementer(IGlobalNotificationText)
@@ -43,14 +44,14 @@ class BubbleGlobalNotificationText(object):
         parent = queryAdapter(aq_parent(self.context), IGlobalNotificationText)
         if parent:
             return parent.global_order_text
-        return ''
+        return u''
 
     @property
     def global_overbook_text(self):
         parent = queryAdapter(aq_parent(self.context), IGlobalNotificationText)
         if parent:
             return parent.global_overbook_text
-        return ''
+        return u''
 
 
 class BaseRegistryNotificationText(object):
@@ -65,7 +66,7 @@ class BaseRegistryNotificationText(object):
         lang = portal_state.language()
         for entry in enum:
             if entry['lang'] == lang:
-                return entry['text']
+                return safe_unicode(entry['text'])
 
 
 @adapter(ISiteRoot)
