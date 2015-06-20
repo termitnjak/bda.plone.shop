@@ -1,6 +1,6 @@
 /* jslint browser: true */
 /* global jQuery, bdajax */
-(function($, bdajax) {
+(function($) {
     "use strict";
 
     $(document).ready(function() {
@@ -28,4 +28,4 @@
         binder(document);
     });
 
-})(jQuery, bdajax);
+})(jQuery);
