@@ -68,18 +68,30 @@ class CartItemAvailability(CartItemAvailabilityBase):
 
     @property
     def purchasable_until(self):
-        expires = queryAdapter(self.context, IBuyablePeriod).expires
-        return bool(expires) and self.addable
+        buyable_period = queryAdapter(self.context, IBuyablePeriod)
+        # no buyable period defined, always buyable if self.addable
+        # is True
+        if not buyable_period:
+            return self.addable
+        return bool(buyable_period.expires) and self.addable
 
     @property
     def not_effective_yet(self):
-        effective = queryAdapter(self.context, IBuyablePeriod).effective
+        buyable_period = queryAdapter(self.context, IBuyablePeriod)
+        # no buyable period defined, always effective
+        if not buyable_period:
+            return True
+        effective = buyable_period.effective
         now = datetime.now()
         return effective and effective >= now or False
 
     @property
     def already_expired(self):
-        expires = queryAdapter(self.context, IBuyablePeriod).expires
+        buyable_period = queryAdapter(self.context, IBuyablePeriod)
+        # no buyable period defined, never expires
+        if not buyable_period:
+            return False
+        expires = buyable_period.expires
         now = datetime.now()
         return expires and expires <= now or False
 
@@ -125,26 +137,40 @@ class CartItemAvailability(CartItemAvailabilityBase):
 
     @property
     def purchasable_until_message(self):
-        date = ulocalized_time(
-            queryAdapter(self.context, IBuyablePeriod).expires,
-            long_format=1,
-            context=self.context,
-            request=self.request,
-        )
-        message = _(u'purchasable_until_message',
-                    default=u'Item is purchasable until ${date}',
-                    mapping={'date': date})
+        buyable_period = queryAdapter(self.context, IBuyablePeriod)
+
+        # no buyable period defined, always purchasable
+        if not buyable_period:
+            message = _(u'item_is_purchasable_message',
+                        default=u'Item is purchasable.')
+        else:
+            date = ulocalized_time(
+                buyable_period.expires,
+                long_format=1,
+                context=self.context,
+                request=self.request,
+            )
+            message = _(u'purchasable_until_message',
+                        default=u'Item is purchasable until ${date}',
+                        mapping={'date': date})
         return message
 
     @property
     def purchasable_as_of_message(self):
-        date = ulocalized_time(
-            queryAdapter(self.context, IBuyablePeriod).effective,
-            long_format=1,
-            context=self.context,
-            request=self.request,
-        )
-        message = _(u'purchasable_as_of_message',
-                    default=u'Item is purchasable as of ${date}',
-                    mapping={'date': date})
+        buyable_period = queryAdapter(self.context, IBuyablePeriod)
+
+        # no buyable period defined, always purchasable
+        if not buyable_period:
+            message = _(u'item_is_purchasable_message',
+                        default=u'Item is purchasable.')
+        else:
+            date = ulocalized_time(
+                buyable_period.effective,
+                long_format=1,
+                context=self.context,
+                request=self.request,
+            )
+            message = _(u'purchasable_as_of_message',
+                        default=u'Item is purchasable as of ${date}',
+                        mapping={'date': date})
         return message
